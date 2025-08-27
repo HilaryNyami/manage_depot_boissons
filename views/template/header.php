@@ -11,17 +11,17 @@
     <!-- dashboardView.css -->
     <link href="../dashboardView.css" rel="stylesheet">
     <!-- stockView.css -->
-    <link href="../stockView.css" rel="stylesheet">
+    <link href="../views/stock/stockView.css" rel="stylesheet">
     <!-- clientsView.css -->
-    <link href="../clientsView.css" rel="stylesheet">
+    <link href="../views/clients/clientsView.css" rel="stylesheet">
     <!-- commandesView.css -->
-    <link href="../commandesView.css" rel="stylesheet">
+    <link href="../views/commandes/commandesView.css" rel="stylesheet">
     <!-- fournisseursView.css -->
-    <link href="../fournisseursView.css" rel="stylesheet">
+    <link href="../views/fournisseurs/fournisseursView.css" rel="stylesheet">
     <!-- caisseView.css -->
-    <link href="../caisseView.css" rel="stylesheet">
+    <link href="../views/caisse/caisseView.css" rel="stylesheet">
     <!-- rapportsView.css -->
-    <link href="../rapportsView.css" rel="stylesheet">
+    <link href="../views/rapports/rapportsView.css" rel="stylesheet">
     
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

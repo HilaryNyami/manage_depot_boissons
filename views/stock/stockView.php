@@ -22,6 +22,32 @@ require('../views/template/navbar.php');
                 </div>
             </div>
 
+            <!-- Filtres -->
+            <form method="GET" action="" class="row g-3 align-items-center mb-4">
+                <div class="col-auto">
+                    <label for="categorie" class="col-form-label">Filtrer par catégorie :</label>
+                </div>
+                <div class="col-auto">
+                    <select name="categorie" id="categorie" class="form-select" onchange="this.form.submit()">
+                        <option value="">Toutes</option>
+                        <?php foreach ($Y_categories as $cat): ?>
+                            <option value="<?= htmlspecialchars($cat->id_categorie) ?>" 
+                                <?= $categorie == $cat->id_categorie ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($cat->nomCategorie) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </form>
+
+            <?php if ($categorie): ?>
+                <p class="text-muted small mb-2">Filtré par catégorie : 
+                    <strong>
+                        <?= htmlspecialchars(array_values(array_filter($Y_categories, fn($c) => $c->id_categorie == $categorie))[0]->nomCategorie ?? '') ?>
+                    </strong>
+                </p>
+            <?php endif; ?>
+            
             <!-- Products Table -->
             <div class="card">
                 <div class="card-header">
@@ -47,6 +73,13 @@ require('../views/template/navbar.php');
                             <tbody>
                                 <?php
                                     foreach ($Y_produit as $produit) {
+                                        if (($produit->seuile_minimum) >= ($produit->quantiteProduit)){
+                                            $couleur = 'bg-danger';
+                                            $status = 'Stock bas';
+                                        }else{
+                                            $couleur = 'bg-success';
+                                            $status = 'Stock élevé'; 
+                                        }
                                 ?>
                                 <tr>
                                     <td>
@@ -62,15 +95,15 @@ require('../views/template/navbar.php');
                                         <span class="badge bg-secondary">bouteille</span>
                                     </td>
                                     <td>
-                                        <span class="badge bg-danger">Stock Bas</span>
+                                        <span class="badge <?= $couleur ?>"><?= $status ?></span>
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
                                             <button class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Modifier">
                                                 <i class="fas fa-edit"></i>
                                             </button>
-                                            <button class="btn btn-outline-info" data-bs-toggle="tooltip" title="Historique">
-                                                <i class="fas fa-history"></i>
+                                            <button class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Supprimer">
+                                                <i class="fas fa-trash"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -78,10 +111,39 @@ require('../views/template/navbar.php');
                                 <?php } ?>
                             </tbody>
                         </table>
+                        <!-- PAGINATION -->
+                        <?php if ($totalPages > 1): ?>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center mt-3">
+                                <!-- Previous -->
+                                <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
+                                    <a class="page-link" href="?page=<?= $page - 1 ?><?= $categorie ? '&categorie=' . urlencode($categorie) : '' ?>" aria-label="Précédent">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+
+                                <!-- Pages -->
+                                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                    <li class="page-item <?= $i == $page ? 'active' : '' ?>">
+                                        <a class="page-link" href="?page=<?= $i ?><?= $categorie ? '&categorie=' . urlencode($categorie) : '' ?>"><?= $i ?></a>
+                                    </li>
+                                <?php endfor; ?>
+
+                                <!-- Next -->
+                                <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
+                                    <a class="page-link" href="?page=<?= $page + 1 ?><?= $categorie ? '&categorie=' . urlencode($categorie) : '' ?>" aria-label="Suivant">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                        <?php endif; ?>
+
                     </div>
                 </div>
             </div>
         </div>
+
 
         <!-- Add Product Modal -->
         <div class="modal fade" id="addProductModal" tabindex="-1">
@@ -161,5 +223,14 @@ require('../views/template/navbar.php');
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
     </script>
+
+    <script>
+        document.getElementById('filterCategorie').addEventListener('change', function() {
+            const categorie = this.value;
+            const url = `stockController.php?categorie=${categorie}`;
+            window.location.href = url; // recharge avec le filtre
+        });
+    </script>
+
 </body>
 </html>

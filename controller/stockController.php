@@ -26,7 +26,7 @@ if ($categorie) {
     $params[] = $categorie;
 }
 
-// LIMIT et OFFSET (PDO ne supporte pas de placeholder)
+// LIMIT et OFFSET
 $sql .= " LIMIT " . intval($limit) . " OFFSET " . intval($offset);
 
 // Exécution de la requête
@@ -53,34 +53,42 @@ $Y_fournisseurs = F_executeRequeteSql("SELECT * FROM fournisseur");
 
 // --- AJOUT DE PRODUIT ---
 if (isset($_POST['enregistrer'])) {
+        extract($_POST);
+
+        //on recupere le dernier produit enregistré dans la bd
+        $Y_dernierProduit = 'SELECT produit.id_produit  FROM produit ORDER BY id_produit  DESC LIMIT 1';
+        $Y_executeDernierProduit = F_executeRequeteSql($Y_dernierProduit);
+                                                
+                                                        
+        foreach($Y_executeDernierProduit as $Y_produit)
+        {
+            $Y_produit = $Y_produit->id_produit;                                                      
+        }
+                                                        
+        $Y_nouveauIdProduit = F_genereMatricule($Y_produit, 'PRD00001'); //sinon on incremente le nième Acheteur
+        // IDUSER TEMP
+        $idUser = "USR00001";
+        $Y_insertProduit = 'INSERT INTO produit(id_produit, id_categorie, idUser, id_fournisseur, nomProduit, prix_vente, quantiteProduit, seuile_minimum, date_create) VALUES(?, ?, ?, ?, ?, ?, ?, ?, NOW())';
+        $Y_tableauValeurs = [$Y_nouveauIdProduit, $id_categorie, $idUser, $id_fournisseur, strtoupper($nomProduit), $prix_vente, $quantiteProduit, $seuile_minimum];
+        $Y_executeInsertProduit = F_executeRequeteSql($Y_insertProduit, $Y_tableauValeurs); //ajoute le nouveau Acheteur pour la descente
+        $H_tableauErreurs[] = 'Nouvel Acheteur enregistré avec success!!!';
+
+        header('Location:stockController.php');
+}
+
+// --- MISE A JOUR DES PRODUIT ---
+if(isset($_POST['maj'])){
     extract($_POST);
 
-    // Récupérer le dernier produit pour générer l'ID
-    $dernierResultRaw = F_executeRequeteSql('SELECT id_produit FROM produit ORDER BY id_produit DESC LIMIT 1');
-    $dernierResult = is_array($dernierResultRaw) ? $dernierResultRaw : [$dernierResultRaw];
-    $dernierIdProduit = !empty($dernierResult) ? $dernierResult[0]->id_produit : null;
+    $sqlUpdate = "UPDATE produit SET nomProduit=?, prix_vente=?, id_categorie=?, quantiteProduit=?, seuile_minimum=?, id_fournisseur=? WHERE id_produit=?";
+    $paramsUpdate = [$nomProduit, $prix_vente, $id_categorie, $quantiteProduit, $seuile_minimum, $id_fournisseur, $id_produit];
 
-    $nouveauIdProduit = F_genereMatricule($dernierIdProduit, 'PRD00001');
-    $idUser = "USR00001"; // temporaire
+    F_executeRequeteSql($sqlUpdate, $paramsUpdate);
 
-    $insertSql = 'INSERT INTO produit (id_produit, id_categorie, idUser, id_fournisseur, nomProduit, prix_vente, quantiteProduit, seuile_minimum, date_create) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())';
-    $paramsInsert = [
-        $nouveauIdProduit,
-        $id_categorie,
-        $idUser,
-        $id_fournisseur,
-        strtoupper($nomProduit),
-        $prix_vente,
-        $quantiteProduit,
-        $seuile_minimum
-    ];
-
-    F_executeRequeteSql($insertSql, $paramsInsert);
-
-    // Redirection pour éviter la double soumission
-    header('Location: stockController.php');
+    header("Location: stockController.php");
     exit();
 }
+
 
 // --- Charger la vue ---
 require('../views/stock/stockView.php');
